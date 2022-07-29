@@ -3,6 +3,8 @@
 #include <cmath>
 #include <ostream>
 
+#include <common.hpp>
+
 namespace raytracing {
 
 class Vec3 {
@@ -47,6 +49,26 @@ class Vec3 {
         double length_squared() const {
             return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
         }
+
+        inline static Vec3 random()
+        {
+            return Vec3(
+                random_double(), 
+                random_double(),
+                random_double()
+            );
+        }
+
+        inline static Vec3 random(double min, double max)
+        {
+            return Vec3(
+                random_double(min, max),
+                random_double(min, max),
+                random_double(min, max)
+            );
+        }
+
+        bool near_zero() const;
     
     public:
         double e[3];
@@ -111,5 +133,14 @@ inline Vec3 unit_vector(Vec3 v)
 {
     return v / v.length();
 }
+
+inline Vec3 reflect(const Vec3 &v, const Vec3 &n)
+{
+    return v - 2 * dot(v, n) * n;
+}
+
+Vec3 random_in_unit_sphere();
+Vec3 random_unit_vector();
+Vec3 random_in_hemisphere(const Vec3 &normal);
 
 } // namespace raytracing

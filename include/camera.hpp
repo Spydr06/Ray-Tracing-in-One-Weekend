@@ -1,6 +1,8 @@
 #pragma once
 
 #include "common.hpp"
+#include "vec3.hpp"
+#include "ray.hpp"
 
 namespace raytracing {
 

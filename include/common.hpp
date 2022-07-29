@@ -39,6 +39,3 @@ namespace raytracing {
     }
 
 } // namespace raytracing
-
-#include "ray.hpp"
-#include "vec3.hpp"
