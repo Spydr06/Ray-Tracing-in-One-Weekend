@@ -35,6 +35,7 @@
 .vscode/
 build/
 bin/
+vgcore.*
 
 # Generated PPM files
 *.ppm
