@@ -37,3 +37,6 @@ bin/
 
 # Generated PPM files
 *.ppm
+
+# compile_flags.txt for clangd
+compile_flags.txt

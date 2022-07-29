@@ -13,6 +13,7 @@ SOURCEDIR = src
 HEADERDIR = include
 BUILDDIR = build
 BINDIR = bin
+COMPILE_FLAGS = compile_flags.txt
 
 BINARY  := $(BINDIR)/raytracing
 SOURCES := $(shell find $(SOURCEDIR) -name '*.cpp')
@@ -30,9 +31,11 @@ $(BUILDDIR)/%.o: %.cpp
 
 setup:
 	@$(MKDIR) $(BUILDDIR)/$(SOURCEDIR) $(BINDIR)
+	$(ECHO) $(CXXFLAGS) > $(COMPILE_FLAGS)
+	$(ECHO) -I$(HEADERDIR) >> $(COMPILE_FLAGS)
 
 clean:
-	$(RM) $(BINDIR) $(BUILDDIR)
+	$(RM) $(BINDIR) $(BUILDDIR) $(COMPILE_FLAGS)
 
 distclean: clean
 
