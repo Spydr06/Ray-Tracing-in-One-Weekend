@@ -34,3 +34,6 @@
 # Build folders
 build/
 bin/
+
+# Generated PPM files
+*.ppm
