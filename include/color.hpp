@@ -3,5 +3,5 @@
 #include "vec3.hpp"
 
 namespace raytracing {
-    void write_color(std::ostream &out, Color pixel_color);
+    void write_color(std::ostream &out, Color pixel_color, int samples_per_pixel);
 }
