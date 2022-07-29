@@ -1,7 +1,7 @@
 OS = Linux
 VERSION = 0.0.1
 
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g -O3
 LDFLAGS = -lm
 
 CXX = /usr/bin/g++
@@ -29,10 +29,12 @@ $(BINARY): $(OBJECTS)
 $(BUILDDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -I$(HEADERDIR) -I$(dir $<) -c $< -o $@
 
-setup:
-	@$(MKDIR) $(BUILDDIR)/$(SOURCEDIR) $(BINDIR)
+$(COMPILE_FLAGS):
 	$(ECHO) $(CXXFLAGS) > $(COMPILE_FLAGS)
 	$(ECHO) -I$(HEADERDIR) >> $(COMPILE_FLAGS)
+
+setup: $(COMPILE_FLAGS)
+	@$(MKDIR) $(BUILDDIR)/$(SOURCEDIR) $(BINDIR)
 
 clean:
 	$(RM) $(BINDIR) $(BUILDDIR) $(COMPILE_FLAGS)
