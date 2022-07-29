@@ -151,5 +151,6 @@ inline Vec3 refract(const Vec3 &uv, const Vec3 &n, double etai_over_etat)
 Vec3 random_in_unit_sphere();
 Vec3 random_unit_vector();
 Vec3 random_in_hemisphere(const Vec3 &normal);
+Vec3 random_in_unit_disk();
 
 } // namespace raytracing
