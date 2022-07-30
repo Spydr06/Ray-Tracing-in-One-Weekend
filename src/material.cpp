@@ -12,7 +12,7 @@ namespace raytracing {
         if(scatter_direction.near_zero())
             scatter_direction = rec.normal;
 
-        scattered = Ray(rec.p, scatter_direction);
+        scattered = Ray(rec.p, scatter_direction, r_in.time());
         attenuation = albedo;
         return true;
     }
@@ -20,7 +20,7 @@ namespace raytracing {
     bool Metal::scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const
     {
         Vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere());
+        scattered = Ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
         attenuation = albedo;
         return dot(scattered.direction(), rec.normal) > 0;
     }
@@ -43,7 +43,7 @@ namespace raytracing {
         else
             direction = refract(unit_direction, rec.normal, refraction_ratio);
 
-        scattered = Ray(rec.p, direction);
+        scattered = Ray(rec.p, direction, r_in.time());
         return true;
     }
 

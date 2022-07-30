@@ -15,7 +15,9 @@ class Camera {
             double vfov /*vertical Field-Of-View*/, 
             double aspect_ratio,
             double aperture,
-            double focus_dist
+            double focus_dist,
+            double _time0 = 0,
+            double _time1 = 0
         )
         {
             auto theta = degrees_to_radians(vfov);
@@ -33,6 +35,8 @@ class Camera {
             lower_left_corner = origin - horizontal / 2 - vertical / 2 - focus_dist * w;
 
             lens_radius = aperture / 2;
+            time0 = _time0;
+            time1 = _time1;
         }
 
         Ray get_ray(double s, double t) const
@@ -40,13 +44,13 @@ class Camera {
             Vec3 rd = lens_radius * random_in_unit_disk();
             Vec3 offset = u * rd.x() + v * rd.y();
 
-            return Ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset);
+            return Ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset, random_double(time0, time1));
         }
     
     private:
         Point3 origin, lower_left_corner;
         Vec3 horizontal, vertical, u, v, w;
-        double lens_radius;
+        double lens_radius, time0, time1;
 };
 
 } // namespace raytracing

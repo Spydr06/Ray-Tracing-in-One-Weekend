@@ -55,7 +55,8 @@ raytracing::HittableList random_scene()
                     // diffuse
                     auto albedo = Color::random() * Color::random();
                     sphere_material = make_shared<Lambertian>(albedo);
-                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    auto center2 = center + Vec3(0, random_double(0, 0.5), 0);
+                    world.add(make_shared<MovingSphere>(center, center2, 0.0, 1.0, 0.2, sphere_material));
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = Color::random(0.5, 1);
@@ -84,6 +85,20 @@ raytracing::HittableList random_scene()
     return world;
 }
 
+template<size_t SZ>
+void write_framebuffer(std::ostream &out, int image_width, int image_height, raytracing::Color framebuffer[][SZ], int samples_per_pixel)
+{
+    for(int j = image_height - 1; j >= 0; --j)
+    {
+        for(int i = 0; i < image_width; ++i)
+        {
+            write_color(std::cout, framebuffer[j][i], samples_per_pixel);
+        }
+    }
+    out << std::flush;
+}
+
+
 int main(int argc, char* argv[]) 
 {
     using namespace raytracing;
@@ -91,9 +106,9 @@ int main(int argc, char* argv[])
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 1920;
+    const int image_width = 300;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 500;
+    const int samples_per_pixel = 100;
     const int max_depth = 50;
 
     // World
@@ -121,13 +136,15 @@ int main(int argc, char* argv[])
     auto dist_to_focus = 10.0;
     auto aperture = 0.1;
 
-    Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+    Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
     // Render
 
+    auto framebuffer = new Color[image_height][image_width];
+
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-    for(int j = image_height -1; j >= 0; --j)
+    for(int j = image_height - 1; j >= 0; --j)
     {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for(int i = 0; i < image_width; ++i) 
@@ -140,10 +157,15 @@ int main(int argc, char* argv[])
                 Ray r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, world, max_depth);
             }
-            write_color(std::cout, pixel_color, samples_per_pixel);
+            framebuffer[j][i] = pixel_color;
         }
     }
+
+    write_framebuffer(std::cout, image_width, image_height, framebuffer, samples_per_pixel);
+
     std::cerr << "\nDone.\n";
+
+    delete[] framebuffer;
 
     return 0;
 }
