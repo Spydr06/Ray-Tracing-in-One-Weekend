@@ -38,8 +38,8 @@ raytracing::HittableList random_scene()
 
     HittableList world;
 
-    auto ground_material = make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
-    world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material));
+    auto checker = make_shared<CheckerTexture>(Color(0.1, 0.1, 0.1), Color(0.9, 0.9, 0.9));
+    world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, make_shared<Lambertian>(checker)));
 
     for(int a = -11; a < 11; a++)
     {
@@ -85,6 +85,19 @@ raytracing::HittableList random_scene()
     return world;
 }
 
+raytracing::HittableList two_spheres()
+{
+    using namespace raytracing;
+
+    HittableList objects;
+    auto checker = std::make_shared<CheckerTexture>(Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+
+    objects.add(std::make_shared<Sphere>(Point3(0,-10, 0), 10, std::make_shared<Lambertian>(checker)));
+    objects.add(std::make_shared<Sphere>(Point3(0, 10, 0), 10, std::make_shared<Lambertian>(checker)));
+
+    return objects;
+}
+
 template<size_t SZ>
 void write_framebuffer(std::ostream &out, int image_width, int image_height, raytracing::Color framebuffer[][SZ], int samples_per_pixel)
 {
@@ -127,16 +140,34 @@ int main(int argc, char* argv[])
     */
     
     // World
-    auto world = random_scene();
-    
+    HittableList world;
+
+    Point3 lookfrom, lookat;
+    auto vfov = 40.0;
+    auto aperture = 0.0;
+
+    switch(0) {
+        case 1:
+            world = random_scene();
+            lookfrom = Point3(13, 2, 3);
+            lookat = Point3(0, 0, 0);
+            vfov = 20.0;
+            aperture = 0.1;
+            break;
+        
+        default:
+        case 2:
+            world = two_spheres();
+            lookfrom = Point3(13, 2, 3);
+            lookat = Point3(0, 0, 0);
+            vfov = 20.0;
+            break;
+    }
+
     // Camera
-    Point3 lookfrom(13, 2, 3);
-    Point3 lookat(0, 0, 0);
     Vec3 vup(0, 1, 0);
     auto dist_to_focus = 10.0;
-    auto aperture = 0.1;
-
-    Camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    Camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 0.0);
 
     // Render
 

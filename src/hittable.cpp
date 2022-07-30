@@ -1,7 +1,8 @@
 #include <hittable.hpp>
 
 namespace raytracing {
-    bool HittableList::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const {
+    bool HittableList::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const 
+    {
         HitRecord temp_rec;
         bool hit_anything = false;
         auto closest_so_far = t_max;
@@ -17,5 +18,24 @@ namespace raytracing {
         }
 
         return hit_anything;
+    }
+
+    bool HittableList::bounding_box(double time0, double time1, AABB &output_box) const
+    {
+        if(objects.empty())
+            return false;
+        
+        AABB temp_box;
+        bool first_box = true;
+
+        for(const auto& object : objects)
+        {
+            if(!object->bounding_box(time0, time1, temp_box))
+                return false;
+            output_box = first_box ? temp_box : surrounding_box(output_box, temp_box);
+            first_box = false;
+        }
+
+        return true;
     }
 }

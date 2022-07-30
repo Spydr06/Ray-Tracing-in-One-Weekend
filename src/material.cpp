@@ -13,7 +13,7 @@ namespace raytracing {
             scatter_direction = rec.normal;
 
         scattered = Ray(rec.p, scatter_direction, r_in.time());
-        attenuation = albedo;
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
 

@@ -13,6 +13,10 @@ class Sphere : public Hittable {
         {}
 
         virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+        virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+
+    private:
+        static void get_sphere_uv(const Point3 &p, double &u, double &v);
 
     public:
         Point3 center;
@@ -28,6 +32,7 @@ class MovingSphere : public Hittable {
         {}
 
         virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+        virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
 
         Point3 center(double time) const;
 
