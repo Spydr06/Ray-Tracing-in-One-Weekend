@@ -8,6 +8,7 @@
 #include <camera.hpp>
 #include <material.hpp>
 #include <aarect.hpp>
+#include <box.hpp>
 
 namespace raytracing {
     Color ray_color(const Ray &r, const Color &background, const Hittable &world, int depth)
@@ -157,6 +158,16 @@ raytracing::HittableList cornell_box()
     objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
     objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
 
+    std::shared_ptr<Hittable> box1 = std::make_shared<Box>(Point3(0, 0, 0), Point3(165, 330, 165), white);
+    box1 = std::make_shared<RotateY>(box1, 15);
+    box1 = std::make_shared<Translate>(box1, Vec3(265, 0, 295));
+    objects.add(box1);
+
+    std::shared_ptr<Hittable> box2 = std::make_shared<Box>(Point3(0, 0, 0), Point3(165, 165, 165), white);
+    box2 = std::make_shared<RotateY>(box2, -18);
+    box2 = std::make_shared<Translate>(box2, Vec3(130, 0, 65));
+    objects.add(box2);
+
     return objects;
 }
 
@@ -205,7 +216,7 @@ int main(int argc, char* argv[])
     auto aperture = 0.0;
     Color background(0,0,0);
     int samples_per_pixel = 1000;
-    const int image_width = 600;
+    const int image_width = 400;
 
     switch(0) {
         case 1:

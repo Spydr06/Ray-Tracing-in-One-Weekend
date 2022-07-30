@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include "ray.hpp"
 #include "aabb.hpp"
+#include "vec3.hpp"
 
 #include <memory>
 #include <vector>
@@ -46,6 +47,36 @@ class HittableList : public Hittable
 
     public:
         std::vector<std::shared_ptr<Hittable>> objects;
+};
+
+class Translate : public Hittable {
+    public:
+        Translate(std::shared_ptr<Hittable> p, const Vec3 &displacement)
+            : ptr(p), offset(displacement)
+        {}
+
+        virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+        virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+
+    public:
+        std::shared_ptr<Hittable> ptr;
+        Vec3 offset;
+};
+
+class RotateY : public Hittable {
+    public:
+        RotateY(std::shared_ptr<Hittable> p, double angle);
+
+        virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+        virtual bool bounding_box(double time0, double time1, AABB &output_box) const override
+        { output_box = bbox; return hasbox; }
+
+    public:
+        std::shared_ptr<Hittable> ptr;
+        double sin_theta;
+        double cos_theta;
+        bool hasbox;
+        AABB bbox;
 };
 
 } // namespace raytracing
