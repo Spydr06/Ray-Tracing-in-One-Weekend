@@ -98,6 +98,18 @@ raytracing::HittableList two_spheres()
     return objects;
 }
 
+raytracing::HittableList two_perlin_spheres() {
+    using namespace raytracing;
+
+    HittableList objects;
+
+    auto pertext = std::make_shared<NoiseTexture>(4);
+    objects.add(std::make_shared<Sphere>(Point3(0,-1000,0), 1000, std::make_shared<Lambertian>(pertext)));
+    objects.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, std::make_shared<Lambertian>(pertext)));
+
+    return objects;
+}
+
 template<size_t SZ>
 void write_framebuffer(std::ostream &out, int image_width, int image_height, raytracing::Color framebuffer[][SZ], int samples_per_pixel)
 {
@@ -119,7 +131,7 @@ int main(int argc, char* argv[])
 
     // Image
     const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 300;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int samples_per_pixel = 100;
     const int max_depth = 50;
@@ -155,9 +167,16 @@ int main(int argc, char* argv[])
             aperture = 0.1;
             break;
         
-        default:
         case 2:
             world = two_spheres();
+            lookfrom = Point3(13, 2, 3);
+            lookat = Point3(0, 0, 0);
+            vfov = 20.0;
+            break;
+        
+        default:
+        case 3:
+            world = two_perlin_spheres();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
             vfov = 20.0;

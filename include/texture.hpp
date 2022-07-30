@@ -2,6 +2,8 @@
 
 #include "common.hpp"
 #include "color.hpp"
+#include "perlin.hpp"
+
 #include <memory>
 
 namespace raytracing {
@@ -44,6 +46,21 @@ class CheckerTexture : public Texture {
     public:
         std::shared_ptr<Texture> odd;
         std::shared_ptr<Texture> even;
+};
+
+class NoiseTexture : public Texture {
+    public:
+        NoiseTexture() {}
+        NoiseTexture(double sc) : scale(sc) {}
+
+        virtual Color value(double u, double v, const Point3 &p) const override 
+        { 
+            return Color(1,1,1) * 0.5 * (1 + sin(scale*p.z() + 10*noise.turb(p))); 
+        }
+    
+    public:
+        Perlin noise;
+        double scale;
 };
 
 } // namespace raytracing
