@@ -8,6 +8,7 @@ Resources:
 - [_Ray Tracing: The Next Week_](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
 - [_Ray Tracing: The Rest of Your Life_](https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html)
 - [_Ray Tracing Git Repository & Source Code_](https://github.com/RayTracing/raytracing.github.io)
+- [_stb_image.h_](https://github.com/nothings/stb/blob/master/stb_image.h)
 
 ## Building:
 

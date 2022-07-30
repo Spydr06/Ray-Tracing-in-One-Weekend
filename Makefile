@@ -11,6 +11,7 @@ ECHO = echo
 
 SOURCEDIR = src
 HEADERDIR = include
+LIBHEADERDIR = lib/include
 BUILDDIR = build
 BINDIR = bin
 COMPILE_FLAGS = compile_flags.txt
@@ -27,11 +28,12 @@ $(BINARY): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJECTS) -o $(BINARY)
 
 $(BUILDDIR)/%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -I$(HEADERDIR) -I$(dir $<) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -I$(HEADERDIR) -I$(LIBHEADERDIR) -I$(dir $<) -c $< -o $@
 
 $(COMPILE_FLAGS):
 	$(ECHO) $(CXXFLAGS) > $(COMPILE_FLAGS)
 	$(ECHO) -I$(HEADERDIR) >> $(COMPILE_FLAGS)
+	$(ECHO) -I$(LIBHEADERDIR) >> $(COMPILE_FLAGS)
 
 setup: $(COMPILE_FLAGS)
 	@$(MKDIR) $(BUILDDIR)/$(SOURCEDIR) $(BINDIR)

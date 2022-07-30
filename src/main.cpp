@@ -2,6 +2,7 @@
 #include "vec3.hpp"
 #include <iostream>
 #include <common.hpp>
+#include <memory>
 #include <sphere.hpp>
 #include <color.hpp>
 #include <camera.hpp>
@@ -98,7 +99,8 @@ raytracing::HittableList two_spheres()
     return objects;
 }
 
-raytracing::HittableList two_perlin_spheres() {
+raytracing::HittableList two_perlin_spheres() 
+{
     using namespace raytracing;
 
     HittableList objects;
@@ -108,6 +110,17 @@ raytracing::HittableList two_perlin_spheres() {
     objects.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, std::make_shared<Lambertian>(pertext)));
 
     return objects;
+}
+
+raytracing::HittableList earth() 
+{
+    using namespace raytracing;
+
+    auto earth_texture = std::make_shared<ImageTexture>("assets/earthmap.jpg");
+    auto earth_surface = std::make_shared<Lambertian>(earth_texture);
+    auto globe = std::make_shared<Sphere>(Point3(0, 0, 0), 2, earth_surface);
+
+    return HittableList(globe);
 }
 
 template<size_t SZ>
@@ -174,9 +187,16 @@ int main(int argc, char* argv[])
             vfov = 20.0;
             break;
         
-        default:
         case 3:
             world = two_perlin_spheres();
+            lookfrom = Point3(13, 2, 3);
+            lookat = Point3(0, 0, 0);
+            vfov = 20.0;
+            break;
+        
+        default:
+        case 4:
+            world = earth();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
             vfov = 20.0;

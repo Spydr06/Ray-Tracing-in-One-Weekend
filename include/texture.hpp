@@ -63,4 +63,23 @@ class NoiseTexture : public Texture {
         double scale;
 };
 
+class ImageTexture : public Texture {
+    public:
+        const static int bytes_per_pixel = 0x03;
+
+        ImageTexture()
+            : data(nullptr), width(0), height(0), bytes_per_scanline(0)
+        {}
+
+        ImageTexture(const char* filename);
+        ~ImageTexture() { delete data; }
+
+        virtual Color value(double u, double v, const Vec3 &p) const override;
+
+    private:
+        unsigned char *data;
+        int width, height;
+        int bytes_per_scanline;
+};
+
 } // namespace raytracing
