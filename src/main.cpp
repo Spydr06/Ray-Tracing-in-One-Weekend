@@ -7,28 +7,29 @@
 #include <color.hpp>
 #include <camera.hpp>
 #include <material.hpp>
+#include <aarect.hpp>
 
 namespace raytracing {
-    Color ray_color(const Ray &r, const Hittable &world, int depth)
+    Color ray_color(const Ray &r, const Color &background, const Hittable &world, int depth)
     {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if(depth <= 0)
             return Color(0, 0, 0);
 
         HitRecord rec;
-        if(world.hit(r, 0.001, infinity, rec)) 
-        {
-            Ray scattered;
-            Color attenuation;
-            if(rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-                return attenuation * ray_color(scattered, world, depth - 1);
-            
-            return Color(0, 0, 0);
-        }
 
-        Vec3 unit_direction = unit_vector(r.direction());
-        auto t = 0.5 * (unit_direction.y() + 1.0);
-        return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
+        // If the ray hits nothing, return the background color.
+        if(!world.hit(r, 0.001, infinity, rec))
+            return background;
+        
+        Ray scattered;
+        Color attenuation;
+        Color emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
+        if(!rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return emitted;
+        
+        return emitted + attenuation * ray_color(scattered, background, world, depth - 1);
     }
 }
 
@@ -123,6 +124,42 @@ raytracing::HittableList earth()
     return HittableList(globe);
 }
 
+raytracing::HittableList simple_light()
+{
+    using namespace raytracing;
+
+    HittableList objects;
+    auto pertext = std::make_shared<NoiseTexture>(4);
+    objects.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, std::make_shared<Lambertian>(pertext)));
+    objects.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, std::make_shared<Lambertian>(pertext)));
+
+    auto difflight = std::make_shared<DiffuseLight>(Color(4, 4, 4));
+    objects.add(std::make_shared<XYRect>(3, 5, 1, 3, -2, difflight));
+
+    return objects;
+}
+
+raytracing::HittableList cornell_box()
+{
+    using namespace raytracing;
+
+    HittableList objects;
+
+    auto red   = std::make_shared<Lambertian>(Color(0.65, 0.05, 0.05));
+    auto white = std::make_shared<Lambertian>(Color(0.75, 0.75, 0.75));
+    auto green = std::make_shared<Lambertian>(Color(0.12, 0.45, 0.15));
+    auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
+
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZRect>(213, 343, 227, 332, 554, light));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
+
+    return objects;
+}
+
 template<size_t SZ>
 void write_framebuffer(std::ostream &out, int image_width, int image_height, raytracing::Color framebuffer[][SZ], int samples_per_pixel)
 {
@@ -143,11 +180,7 @@ int main(int argc, char* argv[])
     using std::make_shared;
 
     // Image
-    const auto aspect_ratio = 3.0 / 2.0;
-    const int image_width = 400;
-    const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;
-    const int max_depth = 50;
+    auto aspect_ratio = 3.0 / 2.0;
 
     // World
     /*HittableList world;
@@ -170,12 +203,16 @@ int main(int argc, char* argv[])
     Point3 lookfrom, lookat;
     auto vfov = 40.0;
     auto aperture = 0.0;
+    Color background(0,0,0);
+    int samples_per_pixel = 1000;
+    const int image_width = 600;
 
     switch(0) {
         case 1:
             world = random_scene();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
+            background = Color(0.70, 0.80, 1.00);
             vfov = 20.0;
             aperture = 0.1;
             break;
@@ -184,6 +221,7 @@ int main(int argc, char* argv[])
             world = two_spheres();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
+            background = Color(0.70, 0.80, 1.00);
             vfov = 20.0;
             break;
         
@@ -191,17 +229,41 @@ int main(int argc, char* argv[])
             world = two_perlin_spheres();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
+            background = Color(0.70, 0.80, 1.00);
             vfov = 20.0;
             break;
         
-        default:
         case 4:
             world = earth();
             lookfrom = Point3(13, 2, 3);
             lookat = Point3(0, 0, 0);
+            background = Color(0.70, 0.80, 1.00);
             vfov = 20.0;
             break;
+
+        case 5:
+            world = simple_light();
+            samples_per_pixel = 1000;
+            background = Color(0, 0, 0);
+            lookfrom = Point3(26, 3, 6);
+            lookat = Point3(0, 2, 0);
+            vfov = 20.0;
+            break;
+
+        default:
+        case 6:
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            samples_per_pixel = 200;
+            background = Color(0, 0, 0);
+            lookfrom = Point3(278, 278, -800);
+            lookat = Point3(278, 278, 0);
+            vfov = 40.0;
+            break;
     }
+
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    const int max_depth = 50;
 
     // Camera
     Vec3 vup(0, 1, 0);
@@ -225,7 +287,7 @@ int main(int argc, char* argv[])
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
                 Ray r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, world, max_depth);
+                pixel_color += ray_color(r, background, world, max_depth);
             }
             framebuffer[j][i] = pixel_color;
         }

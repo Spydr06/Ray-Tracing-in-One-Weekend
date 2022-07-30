@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include "ray.hpp"
 #include "texture.hpp"
+#include "vec3.hpp"
 #include <memory>
 
 namespace raytracing {
@@ -12,6 +13,7 @@ struct HitRecord;
 class Material {
     public:
         virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const = 0;
+        virtual Color emitted(double u, double v, const Point3 &p) const { return Color(0,0,0); }
 };
 
 class Lambertian: public Material {
@@ -47,6 +49,24 @@ class Dielectric : public Material {
 
     private:
         static double reflectance(double cosine, double ref_idx);
+};
+
+class DiffuseLight : public Material {
+    public:
+        DiffuseLight(std::shared_ptr<Texture> a) : emit(a) {}
+        DiffuseLight(Color c) : emit(std::make_shared<SolidColor>(c)) {}
+
+        virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+        {
+            return false;
+        }
+
+        virtual Color emitted(double u, double v, const Point3 &p) const override {
+            return emit->value(u, v, p);
+        }
+
+    public:
+        std::shared_ptr<Texture> emit;
 };
 
 } // namespace raytracing
