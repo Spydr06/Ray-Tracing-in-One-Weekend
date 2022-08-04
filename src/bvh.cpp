@@ -44,37 +44,31 @@ namespace raytracing {
 
         size_t object_span = end - start;
 
-        switch(object_span)
-        {
-            case 1:
-                left = right = objects[start];
-                break;
-            case 2:
-                if(comparator(objects[start], objects[start + 1])) {
-                    left = objects[start];
-                    right = objects[start + 1];
-                }
-                else
-                {
-                    left = objects[start + 1];
-                    right = objects[start];
-                }
-                break;
-            default:
-                std::sort(objects.begin() + start, objects.begin() + end, comparator);
-                auto mid = start + object_span / 2;
-                left = std::make_shared<BVHNode>(objects, start, mid, time0, time1);
-                right = std::make_shared<BVHNode>(objects, mid, end, time0, time1);
-                break;
+        if (object_span == 1) {
+            left = right = objects[start];
+        } else if (object_span == 2) {
+            if (comparator(objects[start], objects[start+1])) {
+                left = objects[start];
+                right = objects[start+1];
+            } else {
+                left = objects[start+1];
+                right = objects[start];
+            }
+        } else {
+            std::sort(objects.begin() + start, objects.begin() + end, comparator);
+
+            auto mid = start + object_span/2;
+            left = std::make_shared<BVHNode>(objects, start, mid, time0, time1);
+            right = std::make_shared<BVHNode>(objects, mid, end, time0, time1);
         }
 
         AABB box_left, box_right;
 
-        if(!left->bounding_box(time0, time1, box_left)
-            || !right->bounding_box(time0, time1, box_right)
+        if (  !left->bounding_box (time0, time1, box_left)
+           || !right->bounding_box(time0, time1, box_right)
         )
-            std::cerr << "No bounding box in BVHNode constructor." << std::endl;    
-        
+            std::cerr << "No bounding box in bvh_node constructor.\n";
+
         box = surrounding_box(box_left, box_right);
     }
 }

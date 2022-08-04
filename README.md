@@ -2,12 +2,19 @@
 
 My first raytracing engine based on the Raytracing in One Weekend book series by Peter Shirley. Be sure to check out their books and code. **All credit goes to them!**
 
-Resources:
+**Resources:**
 
-- [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-- [_Ray Tracing: The Next Week_](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
-- [_Ray Tracing: The Rest of Your Life_](https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html)
+| ✅/⬜ | Book
+|-------|------------------------------------------------------------------------------------------------------------
+| ✅    | [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+| ✅    | [_Ray Tracing: The Next Week_](https://raytracing.github.io/books/RayTracingTheNextWeek.html)
+| ⬜    | [_Ray Tracing: The Rest of Your Life_](https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html)
+
+**Original Source Code:**
 - [_Ray Tracing Git Repository & Source Code_](https://github.com/RayTracing/raytracing.github.io)
+
+**Libraries:**
+
 - [_stb_image.h_](https://github.com/nothings/stb/blob/master/stb_image.h)
 
 ## Building:

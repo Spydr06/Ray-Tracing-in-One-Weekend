@@ -11,6 +11,7 @@ namespace raytracing {
 class BVHNode : public Hittable {
     public:
         BVHNode();
+        
         BVHNode(const HittableList &list, double time0, double time1)
             : BVHNode(list.objects, 0, list.objects.size(), time0, time1)
         {}

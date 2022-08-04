@@ -44,8 +44,8 @@ class CheckerTexture : public Texture {
         virtual Color value(double u, double v, const Point3 &p) const override;
 
     public:
-        std::shared_ptr<Texture> odd;
         std::shared_ptr<Texture> even;
+        std::shared_ptr<Texture> odd;
 };
 
 class NoiseTexture : public Texture {

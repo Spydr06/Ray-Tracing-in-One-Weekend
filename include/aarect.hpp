@@ -23,8 +23,8 @@ class XYRect : public Hittable {
 
 
     public:
-        std::shared_ptr<Material> mp;
         double x0, x1, y0, y1, k;
+        std::shared_ptr<Material> mp;
 };
 
 class XZRect : public Hittable {
@@ -45,8 +45,8 @@ class XZRect : public Hittable {
 
 
     public:
-        std::shared_ptr<Material> mp;
         double x0, x1, z0, z1, k;
+        std::shared_ptr<Material> mp;
 };
 
 class YZRect : public Hittable {
@@ -67,8 +67,8 @@ class YZRect : public Hittable {
 
 
     public:
-        std::shared_ptr<Material> mp;
         double y0, y1, z0, z1, k;
+        std::shared_ptr<Material> mp;
 };
 
 } // namespace raytracing

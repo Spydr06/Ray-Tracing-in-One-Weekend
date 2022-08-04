@@ -9,6 +9,8 @@
 #include <material.hpp>
 #include <aarect.hpp>
 #include <box.hpp>
+#include <constant_medium.hpp>
+#include <bvh.hpp>
 
 namespace raytracing {
     Color ray_color(const Ray &r, const Color &background, const Hittable &world, int depth)
@@ -41,8 +43,8 @@ raytracing::HittableList random_scene()
 
     HittableList world;
 
-    auto checker = make_shared<CheckerTexture>(Color(0.1, 0.1, 0.1), Color(0.9, 0.9, 0.9));
-    world.add(make_shared<Sphere>(Point3(0, -1000, 0), 1000, make_shared<Lambertian>(checker)));
+    auto checker =std::make_shared<CheckerTexture>(Color(0.1, 0.1, 0.1), Color(0.9, 0.9, 0.9));
+    world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000,std::make_shared<Lambertian>(checker)));
 
     for(int a = -11; a < 11; a++)
     {
@@ -57,32 +59,31 @@ raytracing::HittableList random_scene()
                 if (choose_mat < 0.8) {
                     // diffuse
                     auto albedo = Color::random() * Color::random();
-                    sphere_material = make_shared<Lambertian>(albedo);
-                    auto center2 = center + Vec3(0, random_double(0, 0.5), 0);
-                    world.add(make_shared<MovingSphere>(center, center2, 0.0, 1.0, 0.2, sphere_material));
+                    sphere_material =std::make_shared<Lambertian>(albedo);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = Color::random(0.5, 1);
                     auto fuzz = random_double(0, 0.5);
-                    sphere_material = make_shared<Metal>(albedo, fuzz);
-                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    sphere_material =std::make_shared<Metal>(albedo, fuzz);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
                 } else {
                     // glass
-                    sphere_material = make_shared<Dielectric>(1.5);
-                    world.add(make_shared<Sphere>(center, 0.2, sphere_material));
+                    sphere_material =std::make_shared<Dielectric>(1.5);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
                 }
             }
         }
     }
 
-    auto material1 = make_shared<Dielectric>(1.5);
-    world.add(make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
+    auto material1 =std::make_shared<Dielectric>(1.5);
+    world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
 
-    auto material2 = make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
-    world.add(make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
+    auto material2 =std::make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
+    world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
 
-    auto material3 = make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
+    auto material3 =std::make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
+    world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
 
     return world;
@@ -171,6 +172,105 @@ raytracing::HittableList cornell_box()
     return objects;
 }
 
+raytracing::HittableList cornell_smoke()
+{
+    using namespace raytracing;
+
+    HittableList objects;
+
+    auto red   = std::make_shared<Lambertian>(Color(0.65, 0.05, 0.05));
+    auto white = std::make_shared<Lambertian>(Color(0.75, 0.75, 0.75));
+    auto green = std::make_shared<Lambertian>(Color(0.12, 0.45, 0.15));
+    auto light = std::make_shared<DiffuseLight>(Color(7, 7, 7));
+
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 555, green));
+    objects.add(std::make_shared<YZRect>(0, 555, 0, 555, 0, red));
+    objects.add(std::make_shared<XZRect>(113, 443, 127, 432, 554, light));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 0, white));
+    objects.add(std::make_shared<XZRect>(0, 555, 0, 555, 555, white));
+    objects.add(std::make_shared<XYRect>(0, 555, 0, 555, 555, white));
+
+    std::shared_ptr<Hittable> box1 = std::make_shared<Box>(Point3(0, 0, 0), Point3(165, 330, 165), white);
+    box1 = std::make_shared<RotateY>(box1, 15);
+    box1 = std::make_shared<Translate>(box1, Vec3(265, 0, 295));
+    objects.add(std::make_shared<ConstantMedium>(box1, 0.01, Color(0, 0, 0)));
+
+    std::shared_ptr<Hittable> box2 = std::make_shared<Box>(Point3(0, 0, 0), Point3(165, 165, 165), white);
+    box2 = std::make_shared<RotateY>(box2, -18);
+    box2 = std::make_shared<Translate>(box2, Vec3(130, 0, 65));
+    objects.add(std::make_shared<ConstantMedium>(box2, 0.01, Color(1, 1, 1)));
+
+    return objects;
+}
+
+raytracing::HittableList final_scene()
+{
+    using namespace raytracing;
+
+    auto boxes1 = std::make_shared<HittableList>();
+    auto ground = std::make_shared<Lambertian>(Color(0.48, 0.83, 0.53));
+
+    const int boxes_per_side = 20;
+    for(int i = 0; i < boxes_per_side; i++)
+    {
+        for(int j = 0; j < boxes_per_side; j++)
+        {
+            auto w = 100.0;
+            auto x0 = -1000.0 + i*w;
+            auto z0 = -1000.0 + j*w;
+            auto y0 = 0.0;
+            auto x1 = x0 + w;
+            auto y1 = random_double(1,101);
+            auto z1 = z0 + w;
+
+            boxes1->add(std::make_shared<Box>(Point3(x0, y0, z0), Point3(x1, y1, z1), ground));
+        }
+    }
+
+    HittableList objects;
+    objects.add(boxes1);
+
+    auto light = std::make_shared<DiffuseLight>(Color(7, 7, 7));
+    objects.add(std::make_shared<XZRect>(123, 423, 147, 412, 554, light));
+
+    auto center1 = Point3(400, 400, 200);
+    auto center2 = center1 + Vec3(30,0,0);
+    auto moving_sphere_material =std::make_shared<Lambertian>(Color(0.7, 0.3, 0.1));
+    objects.add(std::make_shared<MovingSphere>(center1, center2, 0, 1, 50, moving_sphere_material));
+
+    objects.add(std::make_shared<Sphere>(Point3(260, 150, 45), 50,std::make_shared<Dielectric>(1.5)));
+    objects.add(std::make_shared<Sphere>(
+        Point3(0, 150, 145), 50,std::make_shared<Metal>(Color(0.8, 0.8, 0.9), 1.0)
+    ));
+
+    auto boundary =std::make_shared<Sphere>(Point3(360,150,145), 70,std::make_shared<Dielectric>(1.5));
+    objects.add(boundary);
+    objects.add(std::make_shared<ConstantMedium>(boundary, 0.2, Color(0.2, 0.4, 0.9)));
+    boundary =std::make_shared<Sphere>(Point3(0, 0, 0), 5000,std::make_shared<Dielectric>(1.5));
+    objects.add(std::make_shared<ConstantMedium>(boundary, .0001, Color(1,1,1)));
+
+    auto emat =std::make_shared<Lambertian>(std::make_shared<ImageTexture>("assets/earthmap.jpg"));
+    objects.add(std::make_shared<Sphere>(Point3(400,200,400), 100, emat));
+    auto pertext =std::make_shared<NoiseTexture>(0.1);
+    objects.add(std::make_shared<Sphere>(Point3(220,280,300), 80,std::make_shared<Lambertian>(pertext)));
+
+    HittableList boxes2;
+    auto white =std::make_shared<Lambertian>(Color(.73, .73, .73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+        boxes2.add(std::make_shared<Sphere>(Point3::random(0,165), 10, white));
+    }
+
+    objects.add(std::make_shared<Translate>(
+       std::make_shared<RotateY>(
+           std::make_shared<BVHNode>(boxes2, 0.0, 1.0), 15),
+            Vec3(-100,270,395)
+        )
+    );
+
+    return objects;
+}
+
 template<size_t SZ>
 void write_framebuffer(std::ostream &out, int image_width, int image_height, raytracing::Color framebuffer[][SZ], int samples_per_pixel)
 {
@@ -188,25 +288,9 @@ void write_framebuffer(std::ostream &out, int image_width, int image_height, ray
 int main(int argc, char* argv[]) 
 {
     using namespace raytracing;
-    using std::make_shared;
 
     // Image
     auto aspect_ratio = 3.0 / 2.0;
-
-    // World
-    /*HittableList world;
-
-    auto material_ground = make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
-    auto material_left   = make_shared<Dielectric>(1.5);
-    auto material_right  = make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
-
-    world.add(make_shared<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<Sphere>(Point3( 0.0,    0.0, -1.0),   0.5, material_center));
-    world.add(make_shared<Sphere>(Point3(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add(make_shared<Sphere>(Point3(-1.0,    0.0, -1.0), -0.45, material_left));
-    world.add(make_shared<Sphere>(Point3( 1.0,    0.0, -1.0),   0.5, material_right));
-    */
     
     // World
     HittableList world;
@@ -215,8 +299,8 @@ int main(int argc, char* argv[])
     auto vfov = 40.0;
     auto aperture = 0.0;
     Color background(0,0,0);
-    int samples_per_pixel = 1000;
-    const int image_width = 400;
+    int samples_per_pixel = 1;
+    const int image_width = 200;
 
     switch(0) {
         case 1:
@@ -261,13 +345,33 @@ int main(int argc, char* argv[])
             vfov = 20.0;
             break;
 
-        default:
         case 6:
             world = cornell_box();
             aspect_ratio = 1.0;
             samples_per_pixel = 200;
             background = Color(0, 0, 0);
             lookfrom = Point3(278, 278, -800);
+            lookat = Point3(278, 278, 0);
+            vfov = 40.0;
+            break;
+
+        case 7:
+            world = cornell_smoke();
+            aspect_ratio = 1.0;
+            samples_per_pixel = 200;
+            background = Color(0, 0, 0);
+            lookfrom = Point3(278, 278, -800);
+            lookat = Point3(278, 278, 0);
+            vfov = 40.0;
+            break;
+
+    	default:
+        case 8:
+            world = final_scene();
+            aspect_ratio = 1.0;
+            samples_per_pixel = 1000;
+            background = Color(0,0,0);
+            lookfrom = Point3(478, 278, -600);
             lookat = Point3(278, 278, 0);
             vfov = 40.0;
             break;
@@ -279,7 +383,7 @@ int main(int argc, char* argv[])
     // Camera
     Vec3 vup(0, 1, 0);
     auto dist_to_focus = 10.0;
-    Camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 0.0);
+    Camera cam(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
     // Render
 

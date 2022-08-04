@@ -4,6 +4,8 @@
 #include "ray.hpp"
 #include "texture.hpp"
 #include "vec3.hpp"
+#include "hittable.hpp"
+
 #include <memory>
 
 namespace raytracing {
@@ -67,6 +69,22 @@ class DiffuseLight : public Material {
 
     public:
         std::shared_ptr<Texture> emit;
+};
+
+class Isotropic : public Material {
+    public:
+        Isotropic(Color c) : albedo(std::make_shared<SolidColor>(c)) {};
+        Isotropic(std::shared_ptr<Texture> a) : albedo(a) {};
+
+        virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+        {
+            scattered = Ray(rec.p, random_in_unit_sphere(), r_in.time());
+            attenuation = albedo->value(rec.u, rec.v, rec.p);
+            return true;
+        }
+    
+    public:
+        std::shared_ptr<Texture> albedo;
 };
 
 } // namespace raytracing
